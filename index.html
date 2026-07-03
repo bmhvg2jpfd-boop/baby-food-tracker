@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🍼 宝宝辅食记录器</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #ffb7b2;
+  --primary-light: #ffe4e1;
+  --primary-deep: #ff9e99;
+  --secondary: #b5ead7;
+  --secondary-light: #e3f6ef;
+  --secondary-deep: #8dd3c0;
+  --accent: #ffdac1;
+  --accent-light: #fff0e6;
+  --accent-deep: #ffc8a0;
+  --purple: #e2f0cb;
+  --purple-light: #f5fae8;
+  --purple-deep: #c5e1a5;
+  --blue: #c7ceea;
+  --blue-light: #e8eaf6;
+  --yellow: #fff4bd;
+  --yellow-light: #fffbe6;
+  --bg: #fff8f5;
+  --card: #ffffff;
+  --text: #6b5b55;
+  --text-light: #b0a098;
+  --border: #f0e5df;
+  --shadow: 0 6px 20px rgba(255,183,178,0.12);
+  --shadow-hover: 0 8px 30px rgba(255,183,178,0.2);
+  --radius: 28px;
+  --radius-sm: 18px;
+  --radius-lg: 36px;
+  --radius-xl: 50px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family: 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+#app { display:flex; flex-direction:column; height:100vh; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #ffb7b2 0%, #ffdac1 40%, #b5ead7 80%, #c7ceea 100%);
+  padding: 18px 20px 36px;
+  color: #fff;
+  text-align: center;
+  position: relative;
+  flex-shrink:0;
+  overflow: hidden;
+}
+.header::before, .header::after {
+  content: ''; position: absolute; border-radius: 50%; opacity: 0.2; background: #fff;
+}
+.header::before { width: 140px; height: 140px; top: -50px; right: -40px; }
+.header::after { width: 100px; height: 100px; bottom: -30px; left: -30px; }
+
+.header h1 { font-size: 20px; font-weight:800; letter-spacing:2px; position: relative; z-index: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.header .date { font-size: 12px; opacity:0.85; margin-top:4px; position: relative; z-index: 1; font-weight: 700; }
+
+.baby-avatar-section { position: relative; z-index: 1; margin-top: 16px; }
+.avatar-wrapper {
+  position: relative; display: inline-block;
+  animation: floatAvatar 3s ease-in-out infinite;
+}
+@keyframes floatAvatar {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+.avatar-ring {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: linear-gradient(135deg, #fff, var(--primary-light));
+  padding: 5px; margin: 0 auto;
+  box-shadow: 0 6px 24px rgba(255,183,178,0.35), 0 0 0 8px rgba(255,255,255,0.4), 0 0 0 16px rgba(255,183,178,0.1);
+  position: relative;
+}
+.avatar-ring::before {
+  content: ''; position: absolute; inset: -12px; border-radius: 50%;
+  border: 3px dashed rgba(255,255,255,0.5);
+  animation: spinSlow 12s linear infinite;
+}
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.baby-avatar {
+  width: 110px; height: 110px; border-radius: 50%;
+  object-fit: cover; display: block;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  cursor: pointer; transition: transform 0.3s;
+}
+.baby-avatar:hover { transform: scale(1.08); }
+
+.avatar-edit-hint {
+  font-size: 12px; opacity: 0.9; margin-top: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 700; background: rgba(255,255,255,0.25); padding: 4px 14px; border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.header .baby-info {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-top:10px; font-size:13px; opacity:0.95; position: relative; z-index: 1;
+  flex-wrap: wrap;
+}
+.header .baby-info span { 
+  background:rgba(255,255,255,0.3); padding:5px 16px; border-radius:24px; font-weight: 700;
+  backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);
+}
+.edit-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.35); color: #fff; font-size: 14px;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.3);
+}
+.edit-btn:hover { background: rgba(255,255,255,0.55); transform: scale(1.15) rotate(-10deg); }
+
+.floating-deco {
+  position: absolute; pointer-events: none; z-index: 0; opacity: 0.35;
+}
+.floating-deco.star1 { top: 15%; left: 8%; font-size: 22px; animation: floatDeco 5s ease-in-out infinite; }
+.floating-deco.star2 { top: 25%; right: 10%; font-size: 18px; animation: floatDeco 4s ease-in-out infinite 1s; }
+.floating-deco.heart { bottom: 20%; left: 12%; font-size: 20px; animation: floatDeco 6s ease-in-out infinite 0.5s; }
+.floating-deco.cloud { top: 40%; right: 5%; font-size: 24px; animation: floatDeco 7s ease-in-out infinite 2s; }
+@keyframes floatDeco {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+  50% { transform: translateY(-20px) rotate(8deg); opacity: 0.6; }
+}
+
+/* Main */
+.main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding: 14px 14px 100px; }
+
+.tab-content { display:none; animation: fadeIn 0.4s ease; }
+.tab-content.active { display:block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(12px);} to { opacity:1; transform:translateY(0);} }
+
+/* Cards */
+.card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+  transition: box-shadow 0.3s, transform 0.3s; border: 2px solid transparent;
+  position: relative; overflow: hidden;
+}
+.card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.card::before {
+  content: ''; position: absolute; top: -30px; right: -30px; width: 60px; height: 60px;
+  border-radius: 50%; opacity: 0.06;
+}
+.card-title { font-size:16px; font-weight:800; color:var(--text); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card-title .icon { font-size:20px; }
+
+/* Dashboard */
+.today-summary { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.stat-box {
+  background: linear-gradient(135deg, var(--primary-light), #fff); border-radius: var(--radius-sm);
+  padding: 18px; text-align:center; border: 2px solid var(--primary-light);
+  position: relative; overflow: hidden;
+}
+.stat-box::after {
+  content: '✨'; position: absolute; top: 8px; right: 10px; font-size: 14px; opacity: 0.3;
+}
+.stat-box.green { background: linear-gradient(135deg, var(--secondary-light), #fff); border-color: var(--secondary-light); }
+.stat-box.green::after { content: '🌿'; }
+.stat-box.accent { background: linear-gradient(135deg, var(--accent-light), #fff); border-color: var(--accent-light); }
+.stat-box.accent::after { content: '🌟'; }
+.stat-box .num { font-size:32px; font-weight:800; color:var(--primary-deep); line-height: 1; }
+.stat-box.green .num { color:var(--secondary-deep); }
+.stat-box.accent .num { color:var(--accent-deep); }
+.stat-box .label { font-size:12px; color:var(--text-light); margin-top:6px; font-weight: 700; }
+
+/* Timeline */
+.timeline { position:relative; padding-left:28px; }
+.timeline::before {
+  content:''; position:absolute; left:10px; top:4px; bottom:4px; width:3px;
+  background: linear-gradient(to bottom, var(--primary), var(--secondary), var(--blue));
+  border-radius:3px;
+}
+.timeline-item { position:relative; margin-bottom:18px; padding-left:14px; }
+.timeline-item::before {
+  content:''; position:absolute; left:-24px; top:4px; width:14px; height:14px;
+  border-radius:50%; background: var(--primary); border:3px solid #fff;
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+.timeline-item.green::before { background: var(--secondary); box-shadow: 0 0 0 4px var(--secondary-light); }
+.timeline-item.accent::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-light); }
+.timeline-item .time { font-size:12px; color:var(--text-light); margin-bottom:2px; font-weight: 700; }
+.timeline-item .food-name { font-size:15px; font-weight:800; }
+.timeline-item .food-meta { font-size:12px; color:var(--text-light); margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; }
+.timeline-item .food-meta span { background:var(--bg); padding:3px 10px; border-radius:12px; font-weight: 700; border: 1px solid var(--border); }
+.timeline-item .reaction { font-size:12px; margin-top:6px; padding:5px 12px; border-radius:12px; display:inline-block; font-weight: 700; }
+.reaction-good { background: var(--secondary-light); color: var(--secondary-deep); }
+.reaction-ok { background: var(--accent-light); color: var(--accent-deep); }
+.reaction-bad { background: var(--primary-light); color: var(--primary-deep); }
+.empty-state { text-align:center; padding:40px 20px; color:var(--text-light); }
+.empty-state .icon { font-size:52px; margin-bottom:10px; display: block; animation: bounce 2s ease infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Form */
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:13px; font-weight:800; margin-bottom:8px; color:var(--text); }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; padding:14px 18px; border:2px solid var(--border);
+  border-radius: var(--radius-sm); font-size:15px; background:#fff;
+  font-family: inherit; font-weight: 600; -webkit-appearance:none; appearance:none;
+  transition: border-color 0.2s, box-shadow 0.2s; color: var(--text);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline:none; border-color: var(--primary);
+  box-shadow: 0 0 0 5px rgba(255,183,178,0.15);
+}
+.form-group textarea { resize:vertical; min-height:80px; }
+
+/* Tags */
+.tag-group { display:flex; flex-wrap:wrap; gap:8px; }
+.tag {
+  padding: 8px 18px; border-radius: 24px; font-size:13px; cursor:pointer; font-weight: 700;
+  border: 2px solid var(--border); background:#fff; color:var(--text);
+  transition: all 0.15s; user-select:none; -webkit-tap-highlight-color:transparent;
+}
+.tag.selected { background: var(--primary); border-color: var(--primary); color:#fff; box-shadow: 0 4px 12px rgba(255,183,178,0.3); }
+.tag.selected.green { background: var(--secondary); border-color: var(--secondary); box-shadow: 0 4px 12px rgba(181,234,215,0.3); }
+.tag.selected.red { background: var(--primary-deep); border-color: var(--primary-deep); }
+
+/* Buttons */
+.btn {
+  display:block; width:100%; padding:14px; border:none; border-radius: var(--radius-sm);
+  font-size:16px; font-weight:800; cursor:pointer; text-align:center; font-family: inherit;
+  transition: all 0.2s; -webkit-tap-highlight-color:transparent; letter-spacing: 1px;
+  position: relative; overflow: hidden;
+}
+.btn::after {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+  border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+.btn:active::after { width: 300px; height: 300px; }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color:#fff; box-shadow: 0 6px 16px rgba(255,183,178,0.35); }
+.btn-primary:active { transform:scale(0.97); }
+.btn-secondary { background: var(--bg); color: var(--text); border:2px solid var(--border); }
+.btn-row { display:flex; gap:10px; }
+.btn-row .btn { flex:1; }
+
+/* Import/Export buttons */
+.import-export-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.import-export-row .btn { flex: 1; font-size: 13px; padding: 10px; border-radius: 20px; }
+
+/* History */
+.history-date { font-size:14px; font-weight:800; color:var(--primary-deep); margin:16px 0 10px; padding-left:4px; display: flex; align-items: center; gap: 6px; }
+.history-date::before { content: '📌'; font-size: 12px; }
+.history-item {
+  background: var(--card); border-radius: var(--radius-sm); padding:14px 16px;
+  margin-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04); border:2px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.history-item:hover { transform: translateX(3px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.history-item .left { flex:1; }
+.history-item .time { font-size:12px; color:var(--text-light); font-weight: 700; }
+.history-item .name { font-size:15px; font-weight:800; margin-top:2px; }
+.history-item .meta { font-size:12px; color:var(--text-light); margin-top:4px; font-weight: 700; }
+.history-item .right { display:flex; align-items:center; gap:10px; }
+.history-item .delete-btn {
+  width:34px; height:34px; border-radius:50%; border:none; background:var(--primary-light);
+  color:var(--primary-deep); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+}
+.history-item .delete-btn:hover { background: var(--primary); color: #fff; transform: rotate(10deg); }
+
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stat-card {
+  background: linear-gradient(135deg, var(--card), var(--bg)); border-radius: var(--radius-sm); padding:16px;
+  text-align:center; border:2px solid var(--border); transition: transform 0.2s;
+  position: relative;
+}
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card .big { font-size:28px; font-weight:800; color:var(--primary-deep); }
+.stat-card .small { font-size:12px; color:var(--text-light); margin-top:4px; font-weight: 700; }
+
+.chart-container { margin-top:10px; }
+.chart-bar {
+  display:flex; align-items:center; margin-bottom:10px; font-size:13px;
+}
+.chart-bar .bar-label { width:60px; text-align:right; padding-right:8px; font-size:12px; color:var(--text-light); font-weight: 700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chart-bar .bar-track { flex:1; height:24px; background:var(--bg); border-radius:12px; overflow:hidden; position:relative; border: 1px solid var(--border); }
+.chart-bar .bar-fill { height:100%; border-radius:12px; transition:width 0.5s ease; }
+.chart-bar .bar-value { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:800; color:var(--text); }
+
+.food-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.food-chip {
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light)); color: var(--primary-deep); padding:6px 14px;
+  border-radius:18px; font-size:12px; font-weight:800; border: 2px solid transparent;
+  transition: transform 0.2s;
+}
+.food-chip:hover { transform: scale(1.05); }
+.food-chip.new { background: linear-gradient(135deg, var(--secondary-light), var(--secondary)); color: #fff; }
+.food-chip.liked { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff; }
+
+/* Tips */
+.tip-card { background: linear-gradient(135deg, var(--secondary-light), var(--purple-light)); border-radius: var(--radius-sm); padding:18px; margin-bottom:12px; border: 2px solid transparent; position: relative; }
+.tip-card::before { content: '💡'; position: absolute; top: 10px; right: 14px; font-size: 20px; opacity: 0.3; }
+.tip-card .tip-title { font-size:14px; font-weight:800; color:var(--secondary-deep); margin-bottom:8px; }
+.tip-card .tip-text { font-size:13px; color:var(--text); line-height:1.8; font-weight: 600; }
+.tip-card .tip-age { font-size:11px; color:var(--text-light); margin-top:8px; font-weight: 800; background: rgba(255,255,255,0.6); display: inline-block; padding: 2px 10px; border-radius: 10px; }
+
+/* Modals */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(107,91,85,0.45); z-index:200;
+  display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background: var(--card); border-radius: var(--radius-lg); width:100%; max-width:400px;
+  padding:28px; animation: modalUp 0.4s ease; box-shadow: var(--shadow-hover);
+  border: 2px solid var(--border);
+}
+@keyframes modalUp { from { transform:translateY(40px) scale(0.95); opacity:0;} to { transform:translateY(0) scale(1); opacity:1;} }
+.modal h2 { font-size:18px; margin-bottom:20px; text-align:center; font-weight: 800; }
+.modal .btn { margin-top:8px; border-radius: var(--radius-xl); }
+
+.crop-modal { max-width: 420px; }
+.crop-area {
+  position: relative; width: 280px; height: 280px; margin: 0 auto 16px;
+  border-radius: 20px; overflow: hidden; background: var(--bg);
+  border: 3px solid var(--border); cursor: grab; touch-action: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.crop-area:active { cursor: grabbing; }
+.crop-area canvas { display: block; width: 100%; height: 100%; }
+.crop-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.crop-circle {
+  width: 200px; height: 200px; border-radius: 50%;
+  border: 4px solid #fff; box-shadow: 0 0 0 999px rgba(107,91,85,0.45);
+}
+.crop-hint {
+  text-align: center; font-size: 12px; color: var(--text-light); margin-bottom: 12px; font-weight: 700;
+}
+.crop-preview {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px;
+  background: var(--bg); border: 3px solid var(--primary-light); overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255,183,178,0.2);
+}
+.crop-preview img { width: 100%; height: 100%; object-fit: cover; }
+.crop-actions { display: flex; gap: 10px; }
+.crop-actions .btn { flex: 1; border-radius: var(--radius-xl); }
+
+/* Bottom nav */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  background: var(--card); border-top:2px solid var(--border);
+  display:flex; justify-content:space-around; padding: 6px 0 12px;
+  z-index:100; box-shadow: 0 -6px 24px rgba(0,0,0,0.06);
+}
+.nav-item {
+  flex:1; text-align:center; padding:6px 0; cursor:pointer;
+  color: var(--text-light); font-size:11px; transition: all 0.2s; font-weight: 800;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-item .nav-icon { font-size:24px; display:block; margin-bottom:2px; transition: transform 0.3s; }
+.nav-item.active { color: var(--primary-deep); }
+.nav-item.active .nav-icon { transform: scale(1.2) translateY(-4px); filter: drop-shadow(0 4px 6px rgba(255,183,178,0.4)); }
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .main { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+}
+
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+/* Toast */
+.toast {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-60px);
+  background: var(--text); color:#fff; padding:12px 28px; border-radius:30px;
+  font-size:14px; z-index:300; opacity:0; transition: all 0.3s ease;
+  pointer-events:none; font-weight: 800; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Photo upload */
+.photo-upload-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 110px; height: 110px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  color: var(--primary-deep); font-size: 32px; cursor: pointer;
+  transition: all 0.3s; overflow: hidden; position: relative;
+}
+.photo-upload-btn:hover { transform: scale(1.08); }
+.photo-upload-btn .upload-icon { font-size: 28px; }
+
+.photo-input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; z-index: -1; left: -9999px; }
+
+.photo-form-section {
+  text-align: center; padding: 24px; background: var(--bg); border-radius: var(--radius); margin-bottom: 16px;
+  border: 3px dashed var(--border); transition: all 0.2s; cursor: pointer;
+  min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.photo-form-section:hover { border-color: var(--primary); background: var(--primary-light); }
+.photo-form-preview {
+  width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 8px;
+  object-fit: cover; background: var(--primary-light); display: none;
+  border: 4px solid #fff; box-shadow: 0 6px 20px rgba(255,183,178,0.3);
+}
+.photo-form-placeholder {
+  width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 8px;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  display: flex; align-items: center; justify-content: center; font-size: 40px;
+  color: var(--primary-deep); border: 3px dashed var(--border);
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.08); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.avatar-animate { animation: bounceIn 0.6s ease; }
+
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 6px 24px rgba(255,183,178,0.35), 0 0 0 8px rgba(255,255,255,0.4), 0 0 0 16px rgba(255,183,178,0.1); }
+  50% { box-shadow: 0 6px 32px rgba(255,183,178,0.55), 0 0 0 10px rgba(255,255,255,0.3), 0 0 0 20px rgba(255,183,178,0.08); }
+}
+.avatar-ring.has-photo { animation: gentlePulse 2.5s ease-in-out infinite, floatAvatar 3s ease-in-out infinite; }
+
+/* Gallery */
+.photo-gallery {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px;
+}
+.gallery-photo {
+  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--bg); border: 2px solid var(--border); cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.gallery-photo:hover { transform: scale(1.05) rotate(2deg); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+.gallery-photo img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-photo.empty {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: var(--border); font-weight: 800;
+}
+
+/* Growth */
+.growth-chart-canvas {
+  width: 100%; height: 220px; background: linear-gradient(135deg, var(--bg), #fff); border-radius: var(--radius-sm);
+  border: 2px solid var(--border); margin-bottom: 10px;
+}
+.growth-input-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+.growth-input-row .form-group { margin-bottom: 0; }
+.growth-input-row input { text-align: center; font-weight: 800; font-size: 20px; }
+.growth-input-row label { text-align: center; }
+.growth-list-item {
+  display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+  background: var(--bg); border-radius: var(--radius-sm); margin-bottom: 8px; border: 2px solid var(--border);
+  transition: transform 0.2s;
+}
+.growth-list-item:hover { transform: translateX(3px); }
+.growth-list-item .date { font-size: 12px; color: var(--text-light); font-weight: 700; }
+.growth-list-item .value { font-size: 15px; font-weight: 800; }
+.growth-list-item .value span { color: var(--primary-deep); }
+
+/* Nutrition */
+.nutrition-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+.nutrition-item {
+  text-align: center; padding: 14px 6px; border-radius: var(--radius-sm); background: var(--bg); border: 2px solid var(--border);
+  transition: transform 0.2s;
+}
+.nutrition-item:hover { transform: translateY(-2px); }
+.nutrition-item .value { font-size: 22px; font-weight: 800; color: var(--primary-deep); }
+.nutrition-item .label { font-size: 11px; color: var(--text-light); font-weight: 700; margin-top: 4px; }
+.nutrition-bar-track {
+  height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 6px;
+}
+.nutrition-bar-fill {
+  height: 100%; border-radius: 4px; transition: width 0.5s ease;
+}
+
+/* PDF Export */
+.pdf-export-btn {
+  background: linear-gradient(135deg, #c7ceea, #ffb7b2) !important;
+  box-shadow: 0 6px 16px rgba(199,206,234,0.4) !important;
+}
+
+@media print {
+  body { overflow: visible !important; background: #fff !important; }
+  #app { height: auto !important; }
+  .header { position: relative !important; page-break-inside: avoid; }
+  .bottom-nav { display: none !important; }
+  .main { overflow: visible !important; padding-bottom: 20px !important; }
+  .tab-content { display: block !important; animation: none !important; }
+  .card { break-inside: avoid; box-shadow: none !important; border: 2px solid #eee !important; }
+  .modal-overlay { display: none !important; }
+  .toast { display: none !important; }
+  .pdf-hide { display: none !important; }
+  .pdf-only { display: block !important; }
+}
+.pdf-only { display: none; }
+
+/* Photo watermark */
+.photo-with-watermark {
+  position: relative; display: inline-block;
+}
+.photo-watermark {
+  position: absolute; bottom: 4px; right: 4px;
+  background: rgba(255,255,255,0.9); color: var(--text);
+  font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 10px;
+  backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* Photo viewer */
+.photo-viewer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 400;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+.photo-viewer-overlay img {
+  max-width: 100%; max-height: 85vh; border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.photo-viewer-close {
+  position: absolute; top: 20px; right: 20px; width: 44px; height: 44px;
+  border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);
+  color: #fff; font-size: 20px; cursor: pointer; backdrop-filter: blur(4px);
+  transition: all 0.2s;
+}
+.photo-viewer-close:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+
+/* Quick record card */
+.quick-card {
+  background: linear-gradient(135deg, #fff8f5, #fff) !important;
+  border: 2px solid var(--primary-light) !important;
+}
+.quick-card .tag { 
+  background: linear-gradient(135deg, #fff, var(--bg)) !important; 
+  border-color: var(--border) !important; 
+  font-weight: 800 !important;
+  transition: all 0.2s !important;
+}
+.quick-card .tag:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 12px rgba(255,183,178,0.2) !important;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header" id="headerArea">
+    <div class="floating-deco star1">⭐</div>
+    <div class="floating-deco star2">✨</div>
+    <div class="floating-deco heart">💕</div>
+    <div class="floating-deco cloud">☁️</div>
+    <h1>🍼 宝宝辅食记录器</h1>
+    <div class="date" id="currentDate"></div>
+    <div class="baby-avatar-section">
+      <div class="avatar-wrapper" id="avatarWrapper">
+        <div class="avatar-ring" id="avatarRing">
+          <img class="baby-avatar" id="babyAvatar" src="" alt="宝宝头像" style="display:none;" onclick="triggerPhotoUpload()">
+          <button class="photo-upload-btn" id="uploadBtn" onclick="triggerPhotoUpload()">
+            <span class="upload-icon">📷</span>
+          </button>
+        </div>
+      </div>
+      <div class="avatar-edit-hint" onclick="triggerPhotoUpload()">点击上传宝宝照片 ✨</div>
+    </div>
+    <div class="baby-info" id="babyInfo">
+      <button class="edit-btn" onclick="showEditBaby()" title="修改宝宝信息">✏️</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tab-content active" id="tab-home">
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> 今日概览</div>
+        <div class="today-summary" id="todaySummary">
+          <div class="stat-box"><div class="num" id="todayCount">0</div><div class="label">辅食次数</div></div>
+          <div class="stat-box green"><div class="num" id="todayTypes">0</div><div class="label">食物种类</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🍽️</span> 今日记录</div>
+        <div class="timeline" id="todayTimeline"></div>
+      </div>
+      <div class="card quick-card">
+        <div class="card-title"><span class="icon">✨</span> 快速记录</div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:12px;font-weight:700;">点击下方快捷添加常见辅食</p>
+        <div class="tag-group" id="quickTags">
+          <span class="tag" data-name="米粉" data-type="主食">🍚 米粉</span>
+          <span class="tag" data-name="南瓜泥" data-type="蔬菜">🎃 南瓜泥</span>
+          <span class="tag" data-name="胡萝卜泥" data-type="蔬菜">🥕 胡萝卜泥</span>
+          <span class="tag" data-name="苹果泥" data-type="水果">🍎 苹果泥</span>
+          <span class="tag" data-name="香蕉泥" data-type="水果">🍌 香蕉泥</span>
+          <span class="tag" data-name="蛋黄" data-type="蛋白质">🥚 蛋黄</span>
+          <span class="tag" data-name="肉泥" data-type="蛋白质">🥩 肉泥</span>
+          <span class="tag" data-name="青菜泥" data-type="蔬菜">🥬 青菜泥</span>
+          <span class="tag" data-name="小米粥" data-type="主食">🌾 小米粥</span>
+          <span class="tag" data-name="鱼肉泥" data-type="蛋白质">🐟 鱼肉泥</span>
+          <span class="tag" data-name="豆腐" data-type="蛋白质">🧈 豆腐</span>
+          <span class="tag" data-name="紫薯泥" data-type="主食">🍠 紫薯泥</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="switchTab('add')">➕ 自定义记录</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-add">
+      <div class="card">
+        <div class="card-title"><span class="icon">📝</span> 添加辅食记录</div>
+        <div class="photo-form-section" id="photoFormSection" onclick="document.getElementById('recordPhotoInput').click()">
+          <img class="photo-form-preview" id="recordPhotoPreview" src="" alt="">
+          <div class="photo-form-placeholder" id="recordPhotoPlaceholder">📷</div>
+          <p style="font-size:12px;color:var(--text-light);font-weight:700;">点击添加这次辅食的照片（可选）</p>
+        </div>
+        <input type="file" class="photo-input" id="recordPhotoInput" accept="image/*" onchange="handleRecordPhoto(event)">
+        <div class="form-group">
+          <label>食物名称</label>
+          <input type="text" id="foodName" placeholder="例如：南瓜泥、米粉...">
+        </div>
+        <div class="form-group">
+          <label>食物类别</label>
+          <div class="tag-group" id="typeTags">
+            <span class="tag selected" data-value="主食">🍚 主食</span>
+            <span class="tag" data-value="蔬菜">🥬 蔬菜</span>
+            <span class="tag" data-value="水果">🍎 水果</span>
+            <span class="tag" data-value="蛋白质">🥚 蛋白质</span>
+            <span class="tag" data-value="奶制品">🥛 奶制品</span>
+            <span class="tag" data-value="其他">🍽️ 其他</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>时间</label>
+          <input type="datetime-local" id="foodTime">
+        </div>
+        <div class="form-group">
+          <label>份量</label>
+          <div class="tag-group" id="amountTags">
+            <span class="tag selected" data-value="少量">🥄 少量</span>
+            <span class="tag" data-value="小半碗">🍵 小半碗</span>
+            <span class="tag" data-value="半碗">🥣 半碗</span>
+            <span class="tag" data-value="大半碗">🍲 大半碗</span>
+            <span class="tag" data-value="一碗">🍜 一碗</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>宝宝反应</label>
+          <div class="tag-group" id="reactionTags">
+            <span class="tag selected green" data-value="很喜欢">😋 很喜欢</span>
+            <span class="tag" data-value="一般">😐 一般</span>
+            <span class="tag red" data-value="不喜欢">😣 不喜欢</span>
+            <span class="tag red" data-value="过敏">⚠️ 过敏</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>是否新尝试</label>
+          <div class="tag-group" id="newTags">
+            <span class="tag selected" data-value="否">否</span>
+            <span class="tag" data-value="是">✨ 是，第一次吃</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>备注（可选）</label>
+          <textarea id="foodNote" placeholder="添加一些备注...比如制作方法、宝宝的具体反应等"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="switchTab('home')">取消</button>
+          <button class="btn btn-primary" onclick="saveRecord()">💾 保存记录</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-history">
+      <div class="card">
+        <div class="card-title"><span class="icon">📅</span> 历史记录</div>
+        <div id="historyList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🖼️</span> 宝宝辅食相册</div>
+        <div class="photo-gallery" id="photoGallery"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-stats">
+      <div class="card">
+        <div class="card-title"><span class="icon">📈</span> 数据统计</div>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🍎</span> 食物分类分布</div>
+        <div class="chart-container" id="typeChart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🍎</span> 今日营养分析</div>
+        <div id="nutritionAnalysis"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🆕</span> 新尝试的食物</div>
+        <div class="food-list" id="newFoods"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">⭐</span> 最喜欢的食物</div>
+        <div class="food-list" id="likedFoods"></div>
+      </div>
+      <div class="card pdf-hide">
+        <div class="card-title"><span class="icon">💾</span> 数据备份与恢复</div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:12px;font-weight:700;">导出数据文件到手机，通过微信/邮件传到电脑即可恢复</p>
+        <div class="import-export-row">
+          <button class="btn btn-secondary" onclick="exportData()">📤 导出数据</button>
+          <button class="btn btn-primary" onclick="importData()">📥 导入数据</button>
+        </div>
+      </div>
+      <div class="card pdf-hide">
+        <div class="card-title"><span class="icon">📖</span> 导出纪念册</div>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:12px;font-weight:700;">将宝宝的辅食记录、照片和统计数据导出为 PDF 纪念册</p>
+        <button class="btn btn-primary pdf-export-btn" onclick="exportPDF()">📖 导出 PDF 纪念册</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-growth">
+      <div class="card">
+        <div class="card-title"><span class="icon">📏</span> 记录身高体重</div>
+        <div class="growth-input-row">
+          <div class="form-group">
+            <label>体重 (kg)</label>
+            <input type="number" id="growthWeight" step="0.1" placeholder="8.5">
+          </div>
+          <div class="form-group">
+            <label>身高 (cm)</label>
+            <input type="number" id="growthHeight" step="0.1" placeholder="68.0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>测量日期</label>
+          <input type="date" id="growthDate">
+        </div>
+        <button class="btn btn-primary" onclick="saveGrowthRecord()">💾 保存记录</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📈</span> 体重曲线</div>
+        <canvas id="weightChart" class="growth-chart-canvas" width="340" height="220"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📏</span> 身高曲线</div>
+        <canvas id="heightChart" class="growth-chart-canvas" width="340" height="220"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📝</span> 历史记录</div>
+        <div id="growthList"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-tips">
+      <div class="card">
+        <div class="card-title"><span class="icon">💡</span> 辅食添加指南</div>
+      </div>
+      <div id="tipsList"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" data-tab="home" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>首页
+    </div>
+    <div class="nav-item" data-tab="add" onclick="switchTab('add')">
+      <span class="nav-icon">➕</span>记录
+    </div>
+    <div class="nav-item" data-tab="history" onclick="switchTab('history')">
+      <span class="nav-icon">📅</span>历史
+    </div>
+    <div class="nav-item" data-tab="stats" onclick="switchTab('stats')">
+      <span class="nav-icon">📊</span>统计
+    </div>
+    <div class="nav-item" data-tab="growth" onclick="switchTab('growth')">
+      <span class="nav-icon">📏</span>成长
+    </div>
+    <div class="nav-item" data-tab="tips" onclick="switchTab('tips')">
+      <span class="nav-icon">💡</span>知识
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <h2>👶 设置宝宝信息</h2>
+    <div class="form-group">
+      <label>宝宝昵称</label>
+      <input type="text" id="babyName" placeholder="例如：小豆豆">
+    </div>
+    <div class="form-group">
+      <label>出生日期</label>
+      <input type="date" id="babyBirth">
+    </div>
+    <button class="btn btn-primary" onclick="saveBabyInfo()">开始使用</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cropModal">
+  <div class="modal crop-modal">
+    <h2>✨ 调整宝宝照片</h2>
+    <div class="crop-area" id="cropArea">
+      <canvas id="cropCanvas" width="280" height="280"></canvas>
+      <div class="crop-overlay"><div class="crop-circle"></div></div>
+    </div>
+    <p class="crop-hint">👆 拖动图片调整位置，双指可缩放</p>
+    <div class="crop-preview" id="cropPreview"></div>
+    <div class="crop-actions">
+      <button class="btn btn-secondary" onclick="closeCropModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCroppedPhoto()">保存头像</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'babyFoodRecords_v3';
+const BABY_KEY = 'babyInfo_v3';
+const PHOTO_KEY = 'babyPhoto_v3';
+const GROWTH_KEY = 'babyGrowth_v3';
+
+let baby = null;
+let records = [];
+let growthRecords = [];
+let currentRecordPhoto = null;
+let cropImage = null;
+let cropOffsetX = 0, cropOffsetY = 0, cropScale = 1;
+let isDragging = false;
+let lastTouchDist = 0;
+let dragStartX = 0, dragStartY = 0;
+let cropStartOffsetX = 0, cropStartOffsetY = 0;
+
+function loadData() {
+  const oldBaby = localStorage.getItem('babyInfo_v2');
+  const oldRecords = localStorage.getItem('babyFoodRecords_v2');
+  const oldPhoto = localStorage.getItem('babyPhoto_v2');
+  const oldGrowth = localStorage.getItem('babyGrowth_v2');
+  if (oldBaby && !localStorage.getItem(BABY_KEY)) {
+    localStorage.setItem(BABY_KEY, oldBaby); localStorage.removeItem('babyInfo_v2');
+  }
+  if (oldRecords && !localStorage.getItem(STORAGE_KEY)) {
+    localStorage.setItem(STORAGE_KEY, oldRecords); localStorage.removeItem('babyFoodRecords_v2');
+  }
+  if (oldPhoto && !localStorage.getItem(PHOTO_KEY)) {
+    localStorage.setItem(PHOTO_KEY, oldPhoto); localStorage.removeItem('babyPhoto_v2');
+  }
+  if (oldGrowth && !localStorage.getItem(GROWTH_KEY)) {
+    localStorage.setItem(GROWTH_KEY, oldGrowth); localStorage.removeItem('babyGrowth_v2');
+  }
+
+  const b = localStorage.getItem(BABY_KEY);
+  if (b) baby = JSON.parse(b);
+  const r = localStorage.getItem(STORAGE_KEY);
+  if (r) records = JSON.parse(r);
+  const g = localStorage.getItem(GROWTH_KEY);
+  if (g) growthRecords = JSON.parse(g);
+  const p = localStorage.getItem(PHOTO_KEY);
+  if (p) {
+    const photo = JSON.parse(p);
+    updateAvatarDisplay(photo.data);
+  }
+}
+
+function saveRecords() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+  catch(e) { showToast('存储已满，请删除一些照片'); }
+}
+function saveBaby(b) { baby = b; localStorage.setItem(BABY_KEY, JSON.stringify(b)); }
+function saveBabyPhoto(data) {
+  try { localStorage.setItem(PHOTO_KEY, JSON.stringify({ data, date: new Date().toISOString() })); }
+  catch(e) { showToast('头像过大，请换小图'); }
+}
+function saveGrowthRecords() {
+  try { localStorage.setItem(GROWTH_KEY, JSON.stringify(growthRecords)); }
+  catch(e) { showToast('存储已满'); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function formatDate(d) {
+  const date = new Date(d);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yest = new Date(today); yest.setDate(yest.getDate()-1);
+  const d0 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  let prefix = '';
+  if (+d0 === +today) prefix = '今天';
+  else if (+d0 === +yest) prefix = '昨天';
+  else prefix = `${date.getMonth()+1}月${date.getDate()}日`;
+  const time = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+  return { dateStr: prefix, timeStr: time, full: date.toISOString() };
+}
+
+function getBabyAge() {
+  if (!baby || !baby.birth) return '';
+  const birth = new Date(baby.birth);
+  const now = new Date();
+  let months = (now.getFullYear()-birth.getFullYear())*12 + (now.getMonth()-birth.getMonth());
+  if (now.getDate() < birth.getDate()) months--;
+  const years = Math.floor(months/12);
+  const rem = months % 12;
+  if (years > 0) return `${years}岁${rem}个月`;
+  return `${months}个月`;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelector('.nav-item[data-tab="'+tab+'"]')?.classList.add('active');
+  if (tab === 'home') renderHome();
+  if (tab === 'history') renderHistory();
+  if (tab === 'stats') renderStats();
+  if (tab === 'tips') renderTips();
+  if (tab === 'growth') renderGrowth();
+  if (tab === 'add') initAddForm();
+}
+
+/* ============= Photo Functions ============= */
+function updateAvatarDisplay(dataUrl) {
+  const avatar = document.getElementById('babyAvatar');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const ring = document.getElementById('avatarRing');
+  const hint = document.querySelector('.avatar-edit-hint');
+  if (dataUrl) {
+    avatar.src = dataUrl;
+    avatar.style.display = 'block';
+    uploadBtn.style.display = 'none';
+    ring.classList.add('has-photo');
+    hint.innerHTML = '点击更换照片 ✨';
+  }
+}
+
+function triggerPhotoUpload() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = handleAvatarPhoto;
+  input.click();
+}
+
+function handleAvatarPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    cropImage = new Image();
+    cropImage.onload = () => { cropOffsetX=0; cropOffsetY=0; cropScale=1; openCropModal(); };
+    cropImage.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function openCropModal() {
+  document.getElementById('cropModal').classList.add('show');
+  drawCropCanvas(); updateCropPreview();
+}
+function closeCropModal() {
+  document.getElementById('cropModal').classList.remove('show');
+  cropImage = null;
+}
+
+function drawCropCanvas() {
+  if (!cropImage) return;
+  const canvas = document.getElementById('cropCanvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#f5f0ec'; ctx.fillRect(0,0,w,h);
+  const imgW = cropImage.naturalWidth, imgH = cropImage.naturalHeight;
+  const minSide = Math.min(imgW, imgH);
+  const scale = (w/minSide) * cropScale;
+  const drawW = imgW*scale, drawH = imgH*scale;
+  const centerX = w/2 + cropOffsetX, centerY = h/2 + cropOffsetY;
+  ctx.drawImage(cropImage, centerX-drawW/2, centerY-drawH/2, drawW, drawH);
+}
+
+function updateCropPreview() {
+  if (!cropImage) return;
+  const canvas = document.createElement('canvas');
+  canvas.width=200; canvas.height=200;
+  const ctx = canvas.getContext('2d');
+  const w=280, h=280;
+  const imgW=cropImage.naturalWidth, imgH=cropImage.naturalHeight;
+  const minSide=Math.min(imgW,imgH);
+  const scale=(w/minSide)*cropScale;
+  const drawW=imgW*scale, drawH=imgH*scale;
+  const centerX=w/2+cropOffsetX, centerY=h/2+cropOffsetY;
+  ctx.beginPath(); ctx.arc(100,100,100,0,Math.PI*2); ctx.closePath(); ctx.clip();
+  const sx=(centerX-w/2)*(200/w)+100-drawW*(200/w)/2;
+  const sy=(centerY-h/2)*(200/h)+100-drawH*(200/h)/2;
+  ctx.drawImage(cropImage, sx, sy, drawW*(200/w), drawH*(200/h));
+  document.getElementById('cropPreview').innerHTML = '<img src="'+canvas.toDataURL('image/jpeg',0.9)+'" style="width:100%;height:100%;object-fit:cover;">';
+}
+
+function saveCroppedPhoto() {
+  if (!cropImage) return;
+  const canvas = document.createElement('canvas');
+  canvas.width=400; canvas.height=400;
+  const ctx = canvas.getContext('2d');
+  const w=280, h=280;
+  const imgW=cropImage.naturalWidth, imgH=cropImage.naturalHeight;
+  const minSide=Math.min(imgW,imgH);
+  const scale=(w/minSide)*cropScale;
+  const drawW=imgW*scale, drawH=imgH*scale;
+  const centerX=w/2+cropOffsetX, centerY=h/2+cropOffsetY;
+  ctx.beginPath(); ctx.arc(200,200,200,0,Math.PI*2); ctx.closePath(); ctx.clip();
+  const sx=(centerX-w/2)*(400/w)+200-drawW*(400/w)/2;
+  const sy=(centerY-h/2)*(400/h)+200-drawH*(400/h)/2;
+  ctx.drawImage(cropImage, sx, sy, drawW*(400/w), drawH*(400/h));
+  const dataUrl=canvas.toDataURL('image/jpeg',0.9);
+  saveBabyPhoto(dataUrl); updateAvatarDisplay(dataUrl); closeCropModal();
+  showToast('宝宝照片已保存！');
+}
+
+const cropArea = document.getElementById('cropArea');
+function getTouchDistance(e) {
+  const t1=e.touches[0], t2=e.touches[1];
+  return Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
+}
+cropArea.addEventListener('mousedown', (e) => {
+  isDragging=true; dragStartX=e.clientX; dragStartY=e.clientY;
+  cropStartOffsetX=cropOffsetX; cropStartOffsetY=cropOffsetY;
+});
+cropArea.addEventListener('touchstart', (e) => {
+  if (e.touches.length===2) { lastTouchDist=getTouchDistance(e); }
+  else { isDragging=true; dragStartX=e.touches[0].clientX; dragStartY=e.touches[0].clientY; cropStartOffsetX=cropOffsetX; cropStartOffsetY=cropOffsetY; }
+}, {passive:false});
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging || !cropImage) return;
+  cropOffsetX=cropStartOffsetX+(e.clientX-dragStartX);
+  cropOffsetY=cropStartOffsetY+(e.clientY-dragStartY);
+  drawCropCanvas(); updateCropPreview();
+});
+document.addEventListener('touchmove', (e) => {
+  if (!cropImage) return;
+  if (e.touches.length===2 && lastTouchDist>0) {
+    e.preventDefault();
+    const dist=getTouchDistance(e);
+    cropScale=Math.max(0.5, Math.min(3, cropScale*(dist/lastTouchDist)));
+    lastTouchDist=dist; drawCropCanvas(); updateCropPreview();
+  } else if (isDragging) {
+    cropOffsetX=cropStartOffsetX+(e.touches[0].clientX-dragStartX);
+    cropOffsetY=cropStartOffsetY+(e.touches[0].clientY-dragStartY);
+    drawCropCanvas(); updateCropPreview();
+  }
+}, {passive:false});
+document.addEventListener('mouseup', () => { isDragging=false; lastTouchDist=0; });
+document.addEventListener('touchend', () => { isDragging=false; lastTouchDist=0; });
+cropArea.addEventListener('wheel', (e) => {
+  e.preventDefault(); if (!cropImage) return;
+  cropScale=Math.max(0.5, Math.min(3, cropScale*(e.deltaY>0?0.9:1.1)));
+  drawCropCanvas(); updateCropPreview();
+});
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r); ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r); ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r); ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r); ctx.closePath();
+}
+
+function addWatermark(photoDataUrl, text) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxWidth = 800;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      const pad = 8;
+      ctx.font = 'bold 14px Nunito, Quicksand, sans-serif';
+      const textWidth = ctx.measureText(text).width;
+      const x = canvas.width - textWidth - pad * 2 - 8;
+      const y = canvas.height - 30;
+      roundRectPath(ctx, x, y, textWidth + pad * 2, 22, 8);
+      ctx.fill();
+      ctx.fillStyle = '#6b5b55';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, x + pad, y + 11);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = photoDataUrl;
+  });
+}
+
+function handleRecordPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const raw = ev.target.result;
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 600;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxW) { h = h * (maxW / w); w = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.85);
+      currentRecordPhoto = compressed;
+      document.getElementById('recordPhotoPreview').src = compressed;
+      document.getElementById('recordPhotoPreview').style.display = 'block';
+      document.getElementById('recordPhotoPlaceholder').style.display = 'none';
+    };
+    img.onerror = () => { showToast('照片格式不支持'); };
+    img.src = raw;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============= Tags ============= */
+function setupTagGroup(containerId, allowMultiple=false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      if (allowMultiple) tag.classList.toggle('selected');
+      else { container.querySelectorAll('.tag').forEach(t => t.classList.remove('selected')); tag.classList.add('selected'); }
+    });
+  });
+}
+function getSelectedTag(containerId) {
+  const el = document.getElementById(containerId)?.querySelector('.tag.selected');
+  return el ? el.dataset.value : '';
+}
+
+/* ============= Home ============= */
+function renderHome() {
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const todayRecords = records.filter(r => new Date(r.time).toDateString() === todayStr);
+  const todayTypes = new Set(todayRecords.map(r => r.name)).size;
+
+  document.getElementById('todayCount').textContent = todayRecords.length;
+  document.getElementById('todayTypes').textContent = todayTypes;
+
+  const timeline = document.getElementById('todayTimeline');
+  if (todayRecords.length === 0) {
+    timeline.innerHTML = `<div class="empty-state"><div class="icon">🍽️</div><div>今天还没有记录辅食哦</div><div style="font-size:12px;margin-top:4px;font-weight:700;">点击底部"记录"添加第一条</div></div>`;
+  } else {
+    timeline.innerHTML = todayRecords.sort((a,b) => new Date(a.time)-new Date(b.time)).map((r, i) => {
+      const f = formatDate(r.time);
+      const reactionClass = r.reaction === '很喜欢' ? 'reaction-good' : r.reaction === '一般' ? 'reaction-ok' : 'reaction-bad';
+      const itemClass = i % 3 === 0 ? '' : i % 3 === 1 ? 'green' : 'accent';
+      const photoHtml = r.photo ? `<div class="photo-with-watermark"><img src="${r.photo}" style="width:80px;height:80px;border-radius:14px;object-fit:cover;margin-top:8px;border:2px solid var(--border);"><span class="photo-watermark">${f.timeStr}</span></div>` : '';
+      return `
+        <div class="timeline-item ${itemClass}">
+          <div class="time">${f.timeStr}</div>
+          <div class="food-name">${r.name} ${r.isNew ? '<span style="color:var(--secondary-deep);font-size:12px;">🆕</span>' : ''}</div>
+          <div class="food-meta">
+            <span>${r.type}</span>
+            <span>${r.amount}</span>
+          </div>
+          <div class="reaction ${reactionClass}">${r.reaction}</div>
+          ${photoHtml}
+          ${r.note ? `<div style="font-size:12px;color:var(--text-light);margin-top:4px;font-weight:700;">📝 ${r.note}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('#quickTags .tag').forEach(tag => {
+    tag.onclick = () => {
+      const name = tag.dataset.name;
+      const type = tag.dataset.type;
+      const record = { id: Date.now(), name, type, time: new Date().toISOString(), amount: '少量', reaction: '很喜欢', isNew: !records.some(r => r.name === name), note: '', photo: null };
+      records.push(record); saveRecords();
+      showToast(`已记录：${name}`); renderHome();
+    };
+  });
+}
+
+/* ============= Add ============= */
+function initAddForm() {
+  currentRecordPhoto = null;
+  document.getElementById('recordPhotoPreview').style.display = 'none';
+  document.getElementById('recordPhotoPlaceholder').style.display = 'flex';
+  document.getElementById('recordPhotoPreview').src = '';
+  document.getElementById('recordPhotoInput').value = '';
+  const now = new Date();
+  const localStr = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('foodTime').value = localStr;
+  document.getElementById('foodName').value = '';
+  document.getElementById('foodNote').value = '';
+  document.querySelectorAll('#typeTags .tag').forEach((t,i) => t.classList.toggle('selected', i===0));
+  document.querySelectorAll('#amountTags .tag').forEach((t,i) => t.classList.toggle('selected', i===0));
+  document.querySelectorAll('#reactionTags .tag').forEach((t,i) => t.classList.toggle('selected', i===0));
+  document.querySelectorAll('#newTags .tag').forEach((t,i) => t.classList.toggle('selected', i===0));
+}
+
+async function saveRecord() {
+  const name = document.getElementById('foodName').value.trim();
+  if (!name) { showToast('请输入食物名称'); return; }
+  const type = getSelectedTag('typeTags');
+  const time = document.getElementById('foodTime').value;
+  const amount = getSelectedTag('amountTags');
+  const reaction = getSelectedTag('reactionTags');
+  const isNew = getSelectedTag('newTags') === '是';
+  const note = document.getElementById('foodNote').value.trim();
+  let photo = currentRecordPhoto;
+  if (photo) {
+    try { photo = await addWatermark(photo, `${new Date(time).getMonth()+1}月${new Date(time).getDate()}日 ${name}`); }
+    catch(e) {}
+  }
+  records.push({ id: Date.now(), name, type, time: new Date(time).toISOString(), amount, reaction, isNew, note, photo });
+  saveRecords(); showToast('记录保存成功！'); switchTab('home');
+}
+
+/* ============= History ============= */
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  if (records.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📅</div><div>还没有记录</div></div>`;
+  } else {
+    const sorted = [...records].sort((a,b) => new Date(b.time)-new Date(a.time));
+    let lastDate = '', html = '';
+    sorted.forEach(r => {
+      const f = formatDate(r.time);
+      if (f.dateStr !== lastDate) { if (lastDate) html += '</div>'; html += `<div class="history-date">${f.dateStr}</div><div style="margin-bottom:8px;">`; lastDate = f.dateStr; }
+      const photoHtml = r.photo ? `<img src="${r.photo}" style="width:64px;height:64px;border-radius:14px;object-fit:cover;margin-right:12px;border:2px solid var(--border);">` : '';
+      html += `
+        <div class="history-item">
+          <div class="right">${photoHtml}</div>
+          <div class="left" style="flex:1;">
+            <div class="time">${f.timeStr}</div>
+            <div class="name">${r.name} ${r.isNew ? '<span style="color:var(--secondary-deep);font-size:12px;">🆕</span>' : ''}</div>
+            <div class="meta">${r.type} · ${r.amount} · ${r.reaction}</div>
+          </div>
+          <div class="right">
+            <button class="delete-btn" onclick="deleteRecord(${r.id})">🗑️</button>
+          </div>
+        </div>`;
+    });
+    html += '</div>'; container.innerHTML = html;
+  }
+
+  const gallery = document.getElementById('photoGallery');
+  const photos = records.filter(r => r.photo).map(r => r.photo);
+  if (photos.length === 0) {
+    gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-light);font-size:13px;font-weight:700;">还没有照片，记录时记得添加哦 📷</div>';
+  } else {
+    gallery.innerHTML = photos.slice(0, 9).map((p, i) => 
+      `<div class="gallery-photo" onclick="showPhotoFull('${p}')"><img src="${p}"></div>`
+    ).join('') + (photos.length > 9 ? `<div class="gallery-photo empty" onclick="switchTab('history')">+${photos.length-9}</div>` : '');
+  }
+}
+
+function showPhotoFull(src) {
+  const modal = document.createElement('div');
+  modal.className = 'photo-viewer-overlay';
+  modal.innerHTML = `<img src="${src}" alt=""><button class="photo-viewer-close" onclick="this.parentElement.remove()">✕</button>`;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function deleteRecord(id) {
+  if (!confirm('确定要删除这条记录吗？')) return;
+  records = records.filter(r => r.id !== id); saveRecords();
+  showToast('已删除'); renderHistory();
+}
+
+/* ============= Nutrition ============= */
+const nutritionDB = {
+  '米粉': {kcal:350, protein:7, fat:1, carb:78, iron:25, calcium:20, fiber:1},
+  '南瓜泥': {kcal:26, protein:1, fat:0.1, carb:6, iron:0.8, calcium:21, fiber:0.5},
+  '胡萝卜泥': {kcal:41, protein:0.9, fat:0.2, carb:10, iron:0.6, calcium:33, fiber:2.8},
+  '苹果泥': {kcal:52, protein:0.3, fat:0.2, carb:14, iron:0.1, calcium:6, fiber:2.4},
+  '香蕉泥': {kcal:89, protein:1.1, fat:0.3, carb:23, iron:0.3, calcium:5, fiber:2.6},
+  '蛋黄': {kcal:157, protein:13, fat:11, carb:1, iron:6.1, calcium:55, fiber:0},
+  '肉泥': {kcal:143, protein:20, fat:6, carb:0, iron:1.8, calcium:5, fiber:0},
+  '青菜泥': {kcal:23, protein:1.5, fat:0.3, carb:3.6, iron:2.7, calcium:99, fiber:2.1},
+  '小米粥': {kcal:119, protein:3.5, fat:1, carb:24, iron:2.3, calcium:10, fiber:1.3},
+  '鱼肉泥': {kcal:206, protein:22, fat:12, carb:0, iron:0.8, calcium:15, fiber:0},
+  '豆腐': {kcal:76, protein:8, fat:4.8, carb:1.9, iron:1.5, calcium:350, fiber:0.3},
+  '紫薯泥': {kcal:86, protein:1.6, fat:0.1, carb:20, iron:0.6, calcium:30, fiber:3},
+  'default': {kcal:50, protein:2, fat:1, carb:8, iron:0.5, calcium:30, fiber:1}
+};
+function getNutrition(name) {
+  for (const key in nutritionDB) { if (name.includes(key)) return nutritionDB[key]; }
+  return nutritionDB['default'];
+}
+function amountToGrams(amount) {
+  const map = {'少量':30, '小半碗':50, '半碗':80, '大半碗':120, '一碗':150};
+  return map[amount] || 50;
+}
+function renderNutrition() {
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const todayRecords = records.filter(r => new Date(r.time).toDateString() === todayStr);
+  if (todayRecords.length === 0) {
+    document.getElementById('nutritionAnalysis').innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon">🍎</div><div>今天还没有记录</div></div>';
+    return;
+  }
+  let total = {kcal:0, protein:0, fat:0, carb:0, iron:0, calcium:0, fiber:0};
+  todayRecords.forEach(r => {
+    const n = getNutrition(r.name); const g = amountToGrams(r.amount)/100;
+    total.kcal += Math.round(n.kcal*g); total.protein += Math.round(n.protein*g*10)/10;
+    total.fat += Math.round(n.fat*g*10)/10; total.carb += Math.round(n.carb*g*10)/10;
+    total.iron += Math.round(n.iron*g*10)/10; total.calcium += Math.round(n.calcium*g);
+    total.fiber += Math.round((n.fiber||0)*g*10)/10;
+  });
+  const rec = {kcal:600, protein:15, fat:30, carb:80, iron:11, calcium:270, fiber:10};
+  const make = (label, value, max, unit, color) => {
+    const pct = Math.min(100, Math.round(value/max*100));
+    return `<div class="nutrition-item"><div class="value">${value}${unit}</div><div class="label">${label}</div><div class="nutrition-bar-track"><div class="nutrition-bar-fill" style="width:${pct}%;background:${color};"></div></div></div>`;
+  };
+  document.getElementById('nutritionAnalysis').innerHTML = `
+    <div class="nutrition-grid">${make('热量',total.kcal,rec.kcal,'kcal','var(--primary)')}${make('蛋白质',total.protein,rec.protein,'g','var(--secondary-deep)')}${make('脂肪',total.fat,rec.fat,'g','var(--accent-deep)')}${make('碳水',total.carb,rec.carb,'g','var(--purple-deep)')}${make('铁',total.iron,rec.iron,'mg','#e8929e')}${make('钙',total.calcium,rec.calcium,'mg','#8ecae6')}</div>
+    <p style="font-size:11px;color:var(--text-light);text-align:center;font-weight:700;">* 6-12个月宝宝参考摄入量，仅供参考</p>`;
+}
+
+/* ============= Stats ============= */
+function renderStats() {
+  const total = records.length;
+  const allFoods = [...new Set(records.map(r => r.name))];
+  const newFoods = [...new Set(records.filter(r => r.isNew).map(r => r.name))];
+  const liked = records.filter(r => r.reaction === '很喜欢');
+  const likedFoods = [...new Set(liked.map(r => r.name))];
+  const photos = records.filter(r => r.photo).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="big">${total}</div><div class="small">总记录数</div></div>
+    <div class="stat-card"><div class="big">${allFoods.length}</div><div class="small">尝试食物</div></div>
+    <div class="stat-card"><div class="big">${newFoods.length}</div><div class="small">新食物</div></div>
+    <div class="stat-card"><div class="big">${photos}</div><div class="small">照片数量</div></div>
+  `;
+
+  const typeCounts = {};
+  records.forEach(r => { typeCounts[r.type] = (typeCounts[r.type]||0)+1; });
+  const maxCount = Math.max(...Object.values(typeCounts), 1);
+  const colors = {'主食':'#ffb7b2', '蔬菜':'#b5ead7', '水果':'#ffdac1', '蛋白质':'#e2f0cb', '奶制品':'#c7ceea', '其他':'#d4c5b8'};
+  document.getElementById('typeChart').innerHTML = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).map(([type, count]) => `
+    <div class="chart-bar"><div class="bar-label">${type}</div><div class="bar-track"><div class="bar-fill" style="width:${(count/maxCount*100)}%;background:${colors[type]||'#ccc'};"></div><div class="bar-value">${count}次</div></div></div>
+  `).join('');
+
+  renderNutrition();
+
+  const nf = document.getElementById('newFoods');
+  if (newFoods.length === 0) nf.innerHTML = '<span style="color:var(--text-light);font-size:13px;font-weight:700;">还没有新尝试的食物</span>';
+  else nf.innerHTML = newFoods.map(f => `<span class="food-chip new">${f}</span>`).join('');
+
+  const lf = document.getElementById('likedFoods');
+  if (likedFoods.length === 0) lf.innerHTML = '<span style="color:var(--text-light);font-size:13px;font-weight:700;">还没有特别喜欢的食物</span>';
+  else lf.innerHTML = likedFoods.map(f => `<span class="food-chip liked">${f}</span>`).join('');
+}
+
+/* ============= Growth ============= */
+function saveGrowthRecord() {
+  const weight = parseFloat(document.getElementById('growthWeight').value);
+  const height = parseFloat(document.getElementById('growthHeight').value);
+  const date = document.getElementById('growthDate').value;
+  if (!weight && !height) { showToast('请至少输入体重或身高'); return; }
+  if (!date) { showToast('请选择日期'); return; }
+  growthRecords.push({ id: Date.now(), date, weight: weight || null, height: height || null });
+  growthRecords.sort((a,b) => new Date(a.date) - new Date(b.date));
+  saveGrowthRecords();
+  document.getElementById('growthWeight').value = '';
+  document.getElementById('growthHeight').value = '';
+  document.getElementById('growthDate').value = '';
+  showToast('成长记录已保存！'); renderGrowth();
+}
+function deleteGrowth(id) {
+  if (!confirm('确定删除这条记录？')) return;
+  growthRecords = growthRecords.filter(g => g.id !== id);
+  saveGrowthRecords(); renderGrowth();
+}
+function drawLineChart(canvasId, data, color, label) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  if (data.length < 2) {
+    ctx.fillStyle = 'var(--text-light)'; ctx.font = '700 13px Nunito, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('记录至少两条数据后可查看曲线', w/2, h/2);
+    return;
+  }
+  const pad = {t:30, r:20, b:30, l:40};
+  const cw = w-pad.l-pad.r, ch = h-pad.t-pad.b;
+  const values = data.map(d => d.value).filter(v => v !== null);
+  const minV = Math.min(...values) * 0.9;
+  const maxV = Math.max(...values) * 1.1;
+  const range = maxV - minV || 1;
+  ctx.strokeStyle = 'rgba(240,229,223,0.8)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const y = pad.t + (ch/4)*i; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke(); }
+  ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  data.forEach((d, i) => { if (d.value === null) return; const x = pad.l + (i/(data.length-1))*cw; const y = pad.t + ch - ((d.value-minV)/range)*ch; if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+  data.forEach((d, i) => { if (d.value === null) return; const x = pad.l + (i/(data.length-1))*cw; const y = pad.t + ch - ((d.value-minV)/range)*ch; ctx.beginPath(); ctx.fillStyle = '#fff'; ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.fillStyle = color; ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = 'var(--text)'; ctx.font = '800 11px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(d.value.toFixed(1), x, y-10); });
+  ctx.fillStyle = 'var(--text-light)'; ctx.font = '700 10px Nunito, sans-serif'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) { const val = minV + (range/4)*(4-i); ctx.fillText(val.toFixed(1), pad.l-6, pad.t+(ch/4)*i+4); }
+  ctx.fillStyle = 'var(--text)'; ctx.font = '800 13px Nunito, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(label, pad.l, 18);
+}
+function renderGrowth() {
+  const weightData = growthRecords.map(g => ({value:g.weight, date:g.date})).filter(d => d.value !== null);
+  const heightData = growthRecords.map(g => ({value:g.height, date:g.date})).filter(d => d.value !== null);
+  drawLineChart('weightChart', weightData, 'var(--primary-deep)', '体重 (kg)');
+  drawLineChart('heightChart', heightData, 'var(--secondary-deep)', '身高 (cm)');
+  const list = document.getElementById('growthList');
+  if (growthRecords.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="icon">📏</div><div>还没有记录</div></div>';
+  } else {
+    const sorted = [...growthRecords].sort((a,b) => new Date(b.date)-new Date(a.date));
+    list.innerHTML = sorted.map(g => `
+      <div class="growth-list-item"><div><div class="date">${g.date}</div><div class="value">${g.weight ? '体重 <span>' + g.weight + 'kg</span>' : ''}${g.weight && g.height ? ' · ' : ''}${g.height ? '身高 <span>' + g.height + 'cm</span>' : ''}</div></div><button class="delete-btn" onclick="deleteGrowth(${g.id})">🗑️</button></div>
+    `).join('');
+  }
+}
+
+/* ============= Export/Import Data ============= */
+function exportData() {
+  const data = {
+    version: 'v3',
+    exportDate: new Date().toISOString(),
+    baby: baby,
+    records: records,
+    growthRecords: growthRecords,
+    photo: localStorage.getItem(PHOTO_KEY)
+  };
+  const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `宝宝辅食记录_${baby?.name || ' backup'}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据已导出！通过微信传到电脑即可');
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.baby) { baby = data.baby; saveBaby(baby); updateHeader(); }
+        if (data.records) { records = data.records; saveRecords(); }
+        if (data.growthRecords) { growthRecords = data.growthRecords; saveGrowthRecords(); }
+        if (data.photo) { localStorage.setItem(PHOTO_KEY, data.photo); updateAvatarDisplay(JSON.parse(data.photo).data); }
+        showToast('数据恢复成功！');
+        switchTab('home');
+      } catch (err) { showToast('文件格式不正确'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/* ============= PDF Export ============= */
+function exportPDF() {
+  const date = new Date();
+  const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+  const overlay = document.createElement('div');
+  overlay.id = 'pdfOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:#fff;overflow-y:auto;padding:30px 20px;';
+  const photoData = localStorage.getItem(PHOTO_KEY);
+  const avatarHtml = photoData ? `<img src="${JSON.parse(photoData).data}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:5px solid #ffb7b2;margin-bottom:16px;box-shadow:0 6px 20px rgba(255,183,178,0.3);">` : '';
+  const allPhotos = records.filter(r => r.photo).map(r => r.photo);
+  const photoGrid = allPhotos.length > 0 
+    ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;">${allPhotos.slice(0,12).map(p => `<img src="${p}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;">`).join('')}</div>`
+    : '<p style="color:#b0a098;text-align:center;font-weight:700;">还没有照片</p>';
+  const total = records.length;
+  const allFoods = [...new Set(records.map(r => r.name))];
+  const newFoods = [...new Set(records.filter(r => r.isNew).map(r => r.name))];
+  overlay.innerHTML = `
+    <div style="max-width:600px;margin:0 auto;font-family:Nunito,Quicksand,sans-serif;color:#6b5b55;">
+      <div style="text-align:center;margin-bottom:30px;">${avatarHtml}
+        <h1 style="font-size:26px;font-weight:800;color:#ff9e99;margin-bottom:6px;">${baby?.name || '宝宝'}的辅食纪念册</h1>
+        <p style="font-size:13px;color:#b0a098;font-weight:700;">导出日期：${dateStr} · 月龄：${getBabyAge()}</p>
+      </div>
+      <div style="background:linear-gradient(135deg,#ffe4e1,#e3f6ef);border-radius:20px;padding:20px;margin-bottom:20px;border:2px solid rgba(255,183,178,0.2);">
+        <h2 style="font-size:16px;font-weight:800;margin-bottom:12px;">📊 数据统计</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="text-align:center;padding:14px;background:#fff;border-radius:16px;border:2px solid #f0e5df;"><div style="font-size:28px;font-weight:800;color:#ff9e99;">${total}</div><div style="font-size:12px;color:#b0a098;font-weight:700;">总记录</div></div>
+          <div style="text-align:center;padding:14px;background:#fff;border-radius:16px;border:2px solid #f0e5df;"><div style="font-size:28px;font-weight:800;color:#8dd3c0;">${allFoods.length}</div><div style="font-size:12px;color:#b0a098;font-weight:700;">尝试食物</div></div>
+          <div style="text-align:center;padding:14px;background:#fff;border-radius:16px;border:2px solid #f0e5df;"><div style="font-size:28px;font-weight:800;color:#ffc8a0;">${newFoods.length}</div><div style="font-size:12px;color:#b0a098;font-weight:700;">新食物</div></div>
+          <div style="text-align:center;padding:14px;background:#fff;border-radius:16px;border:2px solid #f0e5df;"><div style="font-size:28px;font-weight:800;color:#c5e1a5;">${allPhotos.length}</div><div style="font-size:12px;color:#b0a098;font-weight:700;">照片</div></div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:20px;padding:20px;margin-bottom:20px;border:2px solid #f0e5df;">
+        <h2 style="font-size:16px;font-weight:800;margin-bottom:12px;">🍽️ 食物记录</h2>
+        ${records.length === 0 ? '<p style="color:#b0a098;text-align:center;font-weight:700;">还没有记录</p>' : [...records].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,20).map(r => { const d=new Date(r.time); return `<div style="padding:10px 0;border-bottom:2px solid #f0e5df;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:800;font-size:15px;">${r.name} ${r.isNew ? '🆕' : ''}</div><div style="font-size:12px;color:#b0a098;font-weight:700;">${d.getMonth()+1}月${d.getDate()}日 · ${r.type} · ${r.amount}</div></div><div style="font-size:13px;font-weight:800;color:${r.reaction==='很喜欢'?'#8dd3c0':r.reaction==='一般'?'#ffc8a0':'#ff9e99'}">${r.reaction}</div></div>`; }).join('')}
+      </div>
+      <div style="background:#fff;border-radius:20px;padding:20px;margin-bottom:20px;border:2px solid #f0e5df;">
+        <h2 style="font-size:16px;font-weight:800;margin-bottom:12px;">🖼️ 照片集锦</h2>${photoGrid}
+      </div>
+      <div style="text-align:center;padding:20px;color:#b0a098;font-size:12px;font-weight:700;"><p>—— 由宝宝辅食记录器生成 ——</p></div>
+      <div style="text-align:center;margin:20px 0;">
+        <button onclick="document.getElementById('pdfOverlay').remove();" style="padding:14px 32px;border:none;border-radius:24px;background:linear-gradient(135deg,#ffb7b2,#ffdac1);color:#fff;font-weight:800;font-size:16px;cursor:pointer;margin-right:10px;">关闭预览</button>
+        <button onclick="window.print();" style="padding:14px 32px;border:none;border-radius:24px;background:linear-gradient(135deg,#b5ead7,#8dd3c0);color:#fff;font-weight:800;font-size:16px;cursor:pointer;">🖨️ 打印 / 保存PDF</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+/* ============= Tips ============= */
+const tipsData = [
+  { age: '4-6个月', title: '辅食添加初期', text: '第一口辅食建议强化铁米粉。从稀到稠、从少到多，每次只添加一种新食物，观察3-5天无过敏反应后再添加下一种。' },
+  { age: '6-8个月', title: '泥糊状食物', text: '可以添加蔬菜泥、水果泥。建议先蔬菜后水果，避免宝宝因习惯甜味而拒食蔬菜。蛋黄从1/4开始尝试。' },
+  { age: '8-10个月', title: '碎末状食物', text: '引入末状食物，锻炼咀嚼能力。可尝试烂面条、碎菜、肉末、豆腐等。鼓励宝宝自己抓握食物。' },
+  { age: '10-12个月', title: '碎块状食物', text: '食物可切成碎块或条状，让宝宝练习自主进食。可尝试软米饭、小饺子、蒸蛋等。奶量逐步减少。' },
+  { age: '12个月后', title: '向家庭餐过渡', text: '逐渐与成人饮食接轨，注意少盐少糖。保证奶量300-500ml/天。培养规律进餐习惯，避免追喂。' },
+  { age: '注意事项', title: '安全提醒', text: '1岁以下不添加盐和糖；蜂蜜1岁后再尝试；花生、坚果等整粒食物需磨碎；避免过硬、过烫食物；进食时必须有成人看护。' }
+];
+function renderTips() {
+  document.getElementById('tipsList').innerHTML = tipsData.map(t => `
+    <div class="tip-card"><div class="tip-title">${t.title}</div><div class="tip-text">${t.text}</div><div class="tip-age">适用：${t.age}</div></div>
+  `).join('');
+}
+
+/* ============= Setup ============= */
+function showSetup() {
+  document.getElementById('setupModal').classList.add('show');
+  document.querySelector('#setupModal h2').textContent = '👶 设置宝宝信息';
+  document.querySelector('#setupModal .btn-primary').textContent = '开始使用';
+  document.getElementById('babyName').value = '';
+  document.getElementById('babyBirth').value = '';
+}
+function showEditBaby() {
+  if (!baby) { showSetup(); return; }
+  document.getElementById('setupModal').classList.add('show');
+  document.querySelector('#setupModal h2').textContent = '✏️ 修改宝宝信息';
+  document.querySelector('#setupModal .btn-primary').textContent = '保存修改';
+  document.getElementById('babyName').value = baby.name || '';
+  document.getElementById('babyBirth').value = baby.birth || '';
+}
+function saveBabyInfo() {
+  const name = document.getElementById('babyName').value.trim() || '宝宝';
+  const birth = document.getElementById('babyBirth').value;
+  if (!birth) { showToast('请选择出生日期'); return; }
+  saveBaby({ name, birth });
+  document.getElementById('setupModal').classList.remove('show');
+  updateHeader(); showToast('宝宝信息已保存！');
+}
+function updateHeader() {
+  if (!baby) return;
+  const info = document.getElementById('babyInfo');
+  info.innerHTML = `<span>👶 ${baby.name}</span><span>📅 ${getBabyAge()}</span><button class="edit-btn" onclick="showEditBaby()" title="修改宝宝信息">✏️</button>`;
+}
+
+/* ============= Init ============= */
+loadData();
+const today = new Date();
+const weekDays = ['周日','周一','周二','周三','周四','周五','周六'];
+document.getElementById('currentDate').textContent = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 ${weekDays[today.getDay()]}`;
+setupTagGroup('typeTags'); setupTagGroup('amountTags'); setupTagGroup('reactionTags'); setupTagGroup('newTags');
+if (!baby) { showSetup(); } else { updateHeader(); }
+renderHome(); renderTips();
+</script>
+</body>
+</html>
